@@ -39,6 +39,15 @@ def set_seed(seed: int) -> None:
     np.random.seed(seed)
     torch.manual_seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
+    # Сид сам по себе не даёт побитового совпадения на CUDA: backward внимания
+    # и часть ядер идут через атомики и от запуска к запуску расходятся уже
+    # в четвёртом знаке лосса. Нужны детерминированные реализации и attention
+    # без flash/mem-efficient бэкендов.
+    os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+    torch.use_deterministic_algorithms(True)
+    torch.backends.cuda.enable_flash_sdp(False)
+    torch.backends.cuda.enable_mem_efficient_sdp(False)
+    torch.backends.cuda.enable_cudnn_sdp(False)
 
 
 def allocated_bytes(device: torch.device) -> int:

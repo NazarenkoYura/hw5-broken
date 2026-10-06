@@ -18,7 +18,15 @@ from src.runtime import resolve_device, resolve_dtype
 
 
 def load_adapter_tokenizer(adapter_dir: Path):
-    return AutoTokenizer.from_pretrained(load_params()["model"]["name"])
+    """Токенизатор берётся из папки адаптера: train сохраняет его рядом с
+    весами, и папка адаптера самодостаточна на чужой машине. Раньше он
+    грузился с HF-хаба — у автора работало, у товарища без сети падало."""
+    if not (adapter_dir / "tokenizer_config.json").exists():
+        raise SystemExit(
+            f"в {adapter_dir} нет файлов токенизатора — такой адаптер непереносим. "
+            "Пересохраните его через train.py: он кладёт токенизатор рядом с весами."
+        )
+    return AutoTokenizer.from_pretrained(adapter_dir)
 
 
 @torch.no_grad()
