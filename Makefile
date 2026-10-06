@@ -1,5 +1,10 @@
 .PHONY: install train train-all train-freeze compare plot check clean distclean
 
+# Python в терминах Windows по умолчанию печатает в кодовую страницу (cp1251),
+# а вывод проверок содержит символы вроде «→» и кириллицу — без этого проверка 2
+# падает с UnicodeEncodeError. UTF-8-режим чинит и печать, и отображение в терминале.
+export PYTHONUTF8 := 1
+
 install:
 	uv sync
 
